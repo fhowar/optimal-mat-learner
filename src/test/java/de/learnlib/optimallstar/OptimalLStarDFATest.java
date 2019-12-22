@@ -35,12 +35,12 @@ import org.testng.annotations.Test;
  *
  * @author falk
  */
-public class OptimalLStarTest {
+public class OptimalLStarDFATest {
     
     private CompactDFA dfa;
     
     @Test
-    public void testOptimalLStar() throws IOException {
+    public void testOptimalLStarDFA() throws IOException {
         
         final Random s = new Random();
         long seed = s.nextLong();
@@ -50,7 +50,7 @@ public class OptimalLStarTest {
 //        dfa = createDFA(r, 60, 2);
         final int ceLength = 200;
 //        dfa = AUTImporter.read(
-//                OptimalLStarTest.class.getResourceAsStream("/peterson2.dfa.gz"));                
+//                OptimalLStarDFATest.class.getResourceAsStream("/peterson2.dfa.gz"));
         dfa = constructSUL();
         
         Alphabet<Character> inputs = dfa.getInputAlphabet();
@@ -65,10 +65,10 @@ public class OptimalLStarTest {
                 new DFACounterOracle<>(sul, "ce");
         
         // construct L* instance
-        //OptimalLStar lstar = new OptimalLStar(
-        //        mqOracle, ceOracle, inputs);
+        OptimalLStarDFA lstar = new OptimalLStarDFA(
+                inputs, mqOracle, ceOracle);
         
-        OptimalTTT lstar = new OptimalTTT(mqOracle, ceOracle, inputs);
+        //OptimalTTT lstar = new OptimalTTT(mqOracle, ceOracle, inputs);
         
         DFAEquivalenceOracle<Character> eqOracle = 
 //                new SimulatorEQOracle.DFASimulatorEQOracle(dfa);
