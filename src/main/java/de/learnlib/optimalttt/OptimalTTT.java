@@ -6,88 +6,100 @@
 package de.learnlib.optimalttt;
 
 import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.api.MembershipOracle.DFAMembershipOracle;
+import de.learnlib.api.MembershipOracle;
+import de.learnlib.optimalttt.dt.DTLeaf;
+import de.learnlib.optimalttt.dt.DecisionTree;
+import de.learnlib.optimalttt.pt.PTNode;
+import de.learnlib.optimalttt.pt.PrefixTree;
+import de.learnlib.optimalttt.st.SuffixTrie;
 import de.learnlib.oracles.DefaultQuery;
-import net.automatalib.automata.fsa.DFA;
-import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
 /**
  *
  * @author falk
  */
-public class OptimalTTT implements LearningAlgorithm.DFALearner<Character> {
+public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> {
     
-    private final DFAMembershipOracle<Character> ceqs;
-    
-    private final Hypothesis hypothesis;
-    
-    private final DecisionTree dtree;
-    
-    private final SuffixTrie strie;
-    
-    private final PrefixTree ptree;
-    
-    public OptimalTTT(DFAMembershipOracle<Character> mqs,
-            DFAMembershipOracle<Character> ceqs,
-            Alphabet<Character> sigma) {
+    private final MembershipOracle<I, D> ceqs;
 
-        this.ceqs = ceqs;
-        
-        this.ptree = new PrefixTree();
-        this.strie = new SuffixTrie();
-        this.dtree = new DecisionTree(mqs, sigma, strie);
-        this.hypothesis = new Hypothesis(ptree, dtree);
-    }
+    protected final SuffixTrie<I> strie = new SuffixTrie<>();
+
+    protected final PrefixTree<I> ptree = new PrefixTree<>();
     
+    protected OptimalTTT(MembershipOracle<I, D> ceqs) {
+        this.ceqs = ceqs;
+    }
+
+    protected abstract int maxSearchIndex(int ceLength);
+
+    abstract protected D hypOutput(Word<I> word);
+
+    abstract protected DTLeaf<I, D> getState(Word<I> prefix);
+
+    abstract protected M hypothesis();
+
+    abstract protected DecisionTree<I, D> dtree();
+
+    abstract protected D suffix(D output, int length);
+
     @Override
-    public void startLearning() {        
-        dtree.sift(ptree.root());
+    public void startLearning() {
+        assert dtree() != null && hypothesis() != null;
+        dtree().sift(ptree.root());
         makeConsistent();
     }
 
     @Override
-    public boolean refineHypothesis(DefaultQuery<Character, Boolean> ce) {
-        boolean hypOut = hypothesis.accepts(ce.getInput());
-        if (hypOut == ce.getOutput()) {
+    public boolean refineHypothesis(DefaultQuery<I, D> ce) {
+        System.out.println("Refine with ce: " +  ce);
+        D hypOut = hypOutput(ce.getInput());
+        if (hypOut.equals(ce.getOutput())) {
             return false;
         }
         do {
             analyzeCounterexample(ce.getInput(), ce.getOutput());
             makeConsistent();
-            hypOut = hypothesis.accepts(ce.getInput());
-        } while (hypOut != ce.getOutput());
+            hypOut = hypOutput(ce.getInput());
+        } while (!hypOut.equals(ce.getOutput()));
         return true;
     }
 
     @Override
-    public DFA<?, Character> getHypothesisModel() {
-        return hypothesis;
+    public M getHypothesisModel() {
+        return hypothesis();
     }
-    
+
+
     private void makeConsistent() {
-        while (dtree.makeConsistent()) {
+        while (dtree().makeConsistent()) {
             // do nothing ...
         };
     }
     
-    private void analyzeCounterexample(Word<Character> ce, boolean refOut) {
-        PrefixTree.Node ua = null;
-        int upper=ce.length();
-        int lower=0;
+    private void analyzeCounterexample(Word<I> ce, D refOut) {
+        PTNode ua = null;
+        int upper = maxSearchIndex(ce.length());
+        int lower = 0;
         
         while (upper - lower > 1) {
             int mid = (upper + lower) / 2;
-            Word<Character> prefix = ce.prefix(mid);
-            Word<Character> suffix = ce.suffix(ce.length() - mid);
-            
-            DecisionTree.LeafNode q = hypothesis.getState(prefix);
+            //System.out.println("Index: " + mid);
+            Word<I> prefix = ce.prefix(mid);
+            Word<I> suffix = ce.suffix(ce.length() - mid);
+            System.out.println(prefix + " . " + suffix);
+
+            DTLeaf<I, D> q = getState(prefix);
             assert q != null;
-            
+            int asCount = q.getShortPrefixes().size();
+            //System.out.println("===================================================================== AS COUNT: " + asCount);
+
             boolean stillCe = false;
-            for (PrefixTree.Node u : q.getShortPrefixes()) {
-                boolean sysOut = ceqs.answerQuery(u.word(), suffix);                
-                if (sysOut == refOut) {                    
+            for (PTNode<I> u : q.getShortPrefixes()) {
+                D sysOut = suffix(ceqs.answerQuery(u.word(), suffix), suffix.size());  // Fix Suffix Length ...
+                //System.out.println("  Short prefix: " + u.word() + " : " + sysOut);
+                if (sysOut.equals(suffix(refOut, suffix.size()))) {
+                    //System.out.println("Still counterexample - moving right");
                     ua = u.succ(suffix.firstSymbol());
                     lower = mid;
                     stillCe = true;
@@ -97,6 +109,7 @@ public class OptimalTTT implements LearningAlgorithm.DFALearner<Character> {
             if (stillCe) {
                 continue;
             }
+            //System.out.println("No counterexample - moving left");
             upper = mid;   
         } 
         
@@ -105,7 +118,7 @@ public class OptimalTTT implements LearningAlgorithm.DFALearner<Character> {
             ua = ptree.root().succ(ce.firstSymbol());
         }
         
-        System.out.println("New short prefix (ce): " + ua.word());
+        //System.out.println("New short prefix (ce): " + ua.word());
         ua.makeShortPrefix();        
     }
 }
