@@ -63,18 +63,19 @@ public class DTLeaf<I, D> extends DTNode<I, D> {
     }
 
     public void makeShortPrefix(PTNode<I> uNew) {
+        assert longPrefixes.contains(uNew);
         longPrefixes.remove(uNew);
         shortPrefixes.add(uNew);
 
         for (I a : tree.sigma()) {
             PTNode<I> ua = uNew.append(a);
-            System.out.println("Adding prefix: " + ua.word());
+            //System.out.println("Adding prefix: " + ua.word());
             tree.root().sift(ua);
         }
     }
 
     public void split(PTNode<I> u1, PTNode<I> u2, I a) {
-        System.out.println("Splitting " + u1.word() + " and " + u2.word());
+        //System.out.println("Splitting " + u1.word() + " and " + u2.word());
         DTLeaf<I, D> ua1 = u1.succ(a).state();
         DTLeaf<I, D> ua2 = u2.succ(a).state();
         DTNode<I, D> n = lca(ua1, ua2);

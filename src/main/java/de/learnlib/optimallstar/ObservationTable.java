@@ -1,16 +1,12 @@
 package de.learnlib.optimallstar;
 
-import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.api.MembershipOracle;
-import de.learnlib.api.MembershipOracle.DFAMembershipOracle;
-import de.learnlib.oracles.DefaultQuery;
-import net.automatalib.automata.fsa.DFA;
-import net.automatalib.automata.fsa.impl.FastDFA;
-import net.automatalib.automata.fsa.impl.FastDFAState;
+
+import de.learnlib.api.algorithm.LearningAlgorithm;
+import de.learnlib.api.oracle.MembershipOracle;
+import de.learnlib.api.query.DefaultQuery;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -59,7 +55,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
 
     @Override
     public boolean refineHypothesis(DefaultQuery<I, D> dq) {
-        System.out.println("Refine hypothesis with counterexample: " + dq);
+        //System.out.println("Refine hypothesis with counterexample: " + dq);
         this.counterexample = dq;        
         while(counterExampleValid()) {
             analyzeCounterexample();
@@ -96,10 +92,10 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
         Word<I> ua = null;
         int upper=maxSearchIndex(ceInput.length());
         int lower=0;
-        
+        D hypOut = getOutput(ceInput);
         while (upper - lower > 1) {
             int mid = (upper + lower) / 2;
-            System.out.println("Index: " + mid);
+            //System.out.println("Index: " + mid);
 
             Word<I> prefix = ceInput.prefix(mid);
             Word<I> suffix = ceInput.suffix(ceInput.length() - mid);
@@ -109,13 +105,13 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             boolean stillCe = false;
             int asCount = getShortPrefixes(rowData).size();
             if (asCount > 1) {
-                System.out.println("===================================================================== AS COUNT: " + asCount);
+                //System.out.println("===================================================================== AS COUNT: " + asCount);
             }
             for (Word<I> u : getShortPrefixes(rowData)) {
                 D sysOut = suffix(ceqs.answerQuery(u, suffix), suffix.length());
-                System.out.println("  Short prefix: " + u + " : " + sysOut);
-                if (sysOut.equals(suffix(counterexample.getOutput(), suffix.length()))) {
-                    System.out.println("Still counterexample - moving right");
+                //System.out.println("  Short prefix: " + u + " : " + sysOut);
+                if (!sysOut.equals(suffix(hypOut, suffix.size()))) {
+                    //System.out.println("Still counterexample - moving right");
                     ua = u.append(suffix.firstSymbol());
                     lower = mid;
                     stillCe = true;
@@ -125,7 +121,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             if (stillCe) {
                 continue;
             }
-            System.out.println("No counterexample - moving left");
+            //System.out.println("No counterexample - moving left");
             upper = mid;   
         } 
         
@@ -134,7 +130,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             ua = ceInput.prefix(1);
         }
         
-        System.out.println("ua " + ua);
+        //System.out.println("ua " + ua);
         addShortPrefix(ua);
     }
     
@@ -151,7 +147,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
     }
     
     private boolean findInconsistency() {
-        System.out.println("Checking consistency");
+        //System.out.println("Checking consistency");
         Word<I>[] shortAsArray = shortPrefixes.toArray(new Word[] {});
         for (int left=0; left< shortAsArray.length-1; left++) {
             for (int right=left+1; right<shortAsArray.length; right++) {
@@ -160,7 +156,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
                 }
             }
         }
-        System.out.println("Obs is consistent");        
+        //System.out.println("Obs is consistent");        
         return false;
     }
     
@@ -174,11 +170,11 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             rowData1 = rows.get(u1.append(a));
             rowData2 = rows.get(u2.append(a));
             if (!Arrays.equals(rowData1, rowData2)) {
-                System.out.println("Obs is inconsistent");
+                //System.out.println("Obs is inconsistent");
                 for (int i=0; i<rowData1.length; i++) {
                     if (!Objects.equals(rowData1[i], rowData2[i])) {
                         Word<I> newSuffx = suffixes[i].prepend(a);
-                        System.out.println("New Suffix: " + newSuffx);
+                        //System.out.println("New Suffix: " + newSuffx);
                          Word<I>[] tmpSuffixes = suffixes;
                         suffixes = new Word[suffixes.length+1];
                         System.arraycopy(tmpSuffixes, 0, suffixes, 0, tmpSuffixes.length);
@@ -216,21 +212,21 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
     }
 
     private boolean findUncloesedness() {     
-        System.out.println("Checking closedness");
+        //System.out.println("Checking closedness");
         for (Word<I> prefix : rows.keySet()) {
             List<Word<I>> shortReps = getShortPrefixes(prefix);
             if (shortReps.isEmpty()) {
-                System.out.println("Obs is unclosed");
+                //System.out.println("Obs is unclosed");
                 addShortPrefix(prefix);
                 return true;
             }
         }
-        System.out.println("Obs is closed");
+        //System.out.println("Obs is closed");
         return false;
     }
     
     private void completeObservations() {
-        System.out.println("Completing observations");
+        //System.out.println("Completing observations");
         for (Entry<Word<I>, D[]> e : rows.entrySet()) {
             D[] rowData = completeRow(e.getKey(), e.getValue());
             e.setValue(rowData);
@@ -261,13 +257,13 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
     }
     
     private void addShortPrefix(Word<I> shortPrefix) {
-        System.out.println("Adding short prefix: " + shortPrefix);
+        //System.out.println("Adding short prefix: " + shortPrefix);
         assert !shortPrefixes.contains(shortPrefix);
         assert rows.containsKey(shortPrefix);
         shortPrefixes.add(shortPrefix);
         for (I a : sigma) {
             Word<I> newPrefix = shortPrefix.append(a);
-            System.out.println("Adding prefix: " + newPrefix);
+            //System.out.println("Adding prefix: " + newPrefix);
             D[] rowData = initRow(newPrefix);
             rows.put(newPrefix, rowData);
         }

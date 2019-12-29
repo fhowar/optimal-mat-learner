@@ -5,14 +5,15 @@
  */
 package de.learnlib.optimalttt;
 
-import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.api.MembershipOracle;
+
+import de.learnlib.api.algorithm.LearningAlgorithm;
+import de.learnlib.api.oracle.MembershipOracle;
+import de.learnlib.api.query.DefaultQuery;
 import de.learnlib.optimalttt.dt.DTLeaf;
 import de.learnlib.optimalttt.dt.DecisionTree;
 import de.learnlib.optimalttt.pt.PTNode;
 import de.learnlib.optimalttt.pt.PrefixTree;
 import de.learnlib.optimalttt.st.SuffixTrie;
-import de.learnlib.oracles.DefaultQuery;
 import net.automatalib.words.Word;
 
 /**
@@ -52,7 +53,7 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
 
     @Override
     public boolean refineHypothesis(DefaultQuery<I, D> ce) {
-        System.out.println("Refine with ce: " +  ce);
+        //System.out.println("Refine with ce: " +  ce);
         D hypOut = hypOutput(ce.getInput());
         if (hypOut.equals(ce.getOutput())) {
             return false;
@@ -81,13 +82,15 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         PTNode ua = null;
         int upper = maxSearchIndex(ce.length());
         int lower = 0;
-        
+        //System.out.println("Hyp: " + hypOutput(ce));
+        D hypOut = hypOutput(ce);
         while (upper - lower > 1) {
             int mid = (upper + lower) / 2;
             //System.out.println("Index: " + mid);
             Word<I> prefix = ce.prefix(mid);
             Word<I> suffix = ce.suffix(ce.length() - mid);
-            System.out.println(prefix + " . " + suffix);
+            //System.out.println(prefix + " . " + suffix);
+
 
             DTLeaf<I, D> q = getState(prefix);
             assert q != null;
@@ -97,8 +100,9 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
             boolean stillCe = false;
             for (PTNode<I> u : q.getShortPrefixes()) {
                 D sysOut = suffix(ceqs.answerQuery(u.word(), suffix), suffix.size());  // Fix Suffix Length ...
-                //System.out.println("  Short prefix: " + u.word() + " : " + sysOut);
-                if (sysOut.equals(suffix(refOut, suffix.size()))) {
+                //System.out.println("  Short prefix: " + u.word() + " : " + sysOut + " : [ref] " + suffix(refOut, suffix.size()) +
+                //        " : [hyp] " + suffix(hypOutput(prefix.concat(suffix)), suffix.size()));
+                if (!sysOut.equals(suffix(hypOut, suffix.size()))) {
                     //System.out.println("Still counterexample - moving right");
                     ua = u.succ(suffix.firstSymbol());
                     lower = mid;

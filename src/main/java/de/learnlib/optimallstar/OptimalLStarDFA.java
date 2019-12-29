@@ -1,7 +1,8 @@
 package de.learnlib.optimallstar;
 
-import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.api.MembershipOracle;
+
+import de.learnlib.api.algorithm.LearningAlgorithm;
+import de.learnlib.api.oracle.MembershipOracle;
 import net.automatalib.automata.fsa.DFA;
 import net.automatalib.automata.fsa.impl.FastDFA;
 import net.automatalib.automata.fsa.impl.FastDFAState;

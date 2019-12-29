@@ -1,10 +1,12 @@
 package de.learnlib.optimallstar;
 
-import de.learnlib.api.LearningAlgorithm;
-import de.learnlib.api.MembershipOracle;
-import net.automatalib.automata.transout.MealyMachine;
-import net.automatalib.automata.transout.impl.FastMealy;
-import net.automatalib.automata.transout.impl.FastMealyState;
+
+import de.learnlib.api.algorithm.LearningAlgorithm;
+import de.learnlib.api.oracle.MembershipOracle;
+import net.automatalib.automata.transducers.MealyMachine;
+import net.automatalib.automata.transducers.impl.FastMealy;
+import net.automatalib.automata.transducers.impl.FastMealyState;
+
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 

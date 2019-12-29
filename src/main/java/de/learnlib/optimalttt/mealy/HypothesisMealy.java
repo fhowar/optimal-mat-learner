@@ -3,7 +3,7 @@ package de.learnlib.optimalttt.mealy;
 import de.learnlib.optimalttt.dt.DTLeaf;
 import de.learnlib.optimalttt.pt.PTNode;
 import de.learnlib.optimalttt.pt.PrefixTree;
-import net.automatalib.automata.transout.MealyMachine;
+import net.automatalib.automata.transducers.MealyMachine;
 import net.automatalib.words.Word;
 
 import javax.annotation.Nonnull;

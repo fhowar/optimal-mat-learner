@@ -1,6 +1,6 @@
 package de.learnlib.optimalttt.dt;
 
-import de.learnlib.api.MembershipOracle;
+import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.optimalttt.pt.PTNode;
 import de.learnlib.optimalttt.st.STNode;
 import net.automatalib.words.Alphabet;

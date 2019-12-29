@@ -1,14 +1,20 @@
 package de.learnlib.optimalttt.mealy;
 
-import de.learnlib.api.MembershipOracle;
+
+import de.learnlib.api.algorithm.LearningAlgorithm;
+import de.learnlib.api.oracle.MembershipOracle;
+import de.learnlib.api.query.DefaultQuery;
 import de.learnlib.optimalttt.OptimalTTT;
 import de.learnlib.optimalttt.dt.DTLeaf;
 import de.learnlib.optimalttt.dt.DecisionTree;
-import net.automatalib.automata.transout.MealyMachine;
+import net.automatalib.automata.transducers.MealyMachine;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
-public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, I, Word<O>> {
+import javax.annotation.Nonnull;
+
+public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, I, Word<O>>
+        implements LearningAlgorithm.MealyLearner<I, O> {
 
     private final HypothesisMealy<I, O> hypothesis;
 
@@ -67,4 +73,5 @@ public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, 
     protected Word<O> suffix(Word<O> output, int length) {
         return output.suffix(length);
     }
+
 }

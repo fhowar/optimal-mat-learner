@@ -35,14 +35,14 @@ public class DTInnerNode<I, D> extends DTNode<I, D> {
             succ.sift(prefix);
         }
         else {
-            System.out.println("New short prefix (sifting): " + prefix.word());
+            //System.out.println("New short prefix (sifting): " + prefix.word());
             DTLeaf<I, D> newLeaf = new DTLeaf<>(this, tree, prefix);
             children.addChild(out, newLeaf);
             prefix.setState( newLeaf );
 
             for (I a : tree.sigma()) {
                 PTNode<I> ua = prefix.append(a);
-                System.out.println("Adding prefix: " + ua.word());
+                //System.out.println("Adding prefix: " + ua.word());
                 tree.root().sift(ua);
             }
         }

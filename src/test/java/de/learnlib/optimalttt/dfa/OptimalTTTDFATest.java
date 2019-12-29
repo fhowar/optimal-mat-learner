@@ -6,14 +6,13 @@
 package de.learnlib.optimalttt.dfa;
 
 
-import de.learnlib.api.EquivalenceOracle.DFAEquivalenceOracle;
-import de.learnlib.api.MembershipOracle.DFAMembershipOracle;
-import de.learnlib.experiments.Experiment.DFAExperiment;
-import de.learnlib.optimallstar.OptimalLStarDFA;
-import de.learnlib.oracles.CounterOracle.DFACounterOracle;
-import de.learnlib.oracles.DefaultQuery;
-import de.learnlib.oracles.SimulatorOracle.DFASimulatorOracle;
-import de.learnlib.statistics.SimpleProfiler;
+import de.learnlib.api.oracle.EquivalenceOracle;
+import de.learnlib.api.oracle.MembershipOracle;
+import de.learnlib.api.query.DefaultQuery;
+import de.learnlib.filter.statistic.oracle.CounterOracle;
+import de.learnlib.oracle.membership.SimulatorOracle;
+import de.learnlib.util.Experiment;
+import de.learnlib.util.statistics.SimpleProfiler;
 import net.automatalib.automata.fsa.DFA;
 import net.automatalib.automata.fsa.impl.compact.CompactDFA;
 import net.automatalib.util.automata.Automata;
@@ -53,27 +52,27 @@ public class OptimalTTTDFATest {
         
         Alphabet<Character> inputs = dfa.getInputAlphabet();
 
-        DFAMembershipOracle<Character> sul = 
-                new DFASimulatorOracle<>(dfa);
+        MembershipOracle.DFAMembershipOracle<Character> sul =
+                new SimulatorOracle.DFASimulatorOracle<>(dfa);
 
-        DFACounterOracle<Character> mqOracle = 
-                new DFACounterOracle<>(sul, "mq");
+        CounterOracle.DFACounterOracle<Character> mqOracle =
+                new CounterOracle.DFACounterOracle<>(sul, "mq");
 
-        DFACounterOracle<Character> ceOracle = 
-                new DFACounterOracle<>(sul, "ce");
+        CounterOracle.DFACounterOracle<Character> ceOracle =
+                new CounterOracle.DFACounterOracle<>(sul, "ce");
 
         OptimalTTTDFA ttt = new OptimalTTTDFA(mqOracle, ceOracle, inputs);
         
-        DFAEquivalenceOracle<Character> eqOracle = 
+        EquivalenceOracle.DFAEquivalenceOracle<Character> eqOracle =
 //                new SimulatorEQOracle.DFASimulatorEQOracle(dfa);
-                new DFAEquivalenceOracle() {
+                new EquivalenceOracle.DFAEquivalenceOracle() {
             @Override
             public DefaultQuery findCounterExample(Object a, Collection clctn) {
                  return generateCounterexample( (DFA<?,Character>)a, ceLength, r);
             }
         };
                 
-        DFAExperiment<Character> experiment = new DFAExperiment<>(ttt, eqOracle, inputs);
+        Experiment.DFAExperiment<Character> experiment = new Experiment.DFAExperiment<>(ttt, eqOracle, inputs);
 
         // turn on time profiling
         experiment.setProfile(true);

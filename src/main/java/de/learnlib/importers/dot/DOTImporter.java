@@ -1,7 +1,7 @@
 package de.learnlib.importers.dot;
 
 
-import net.automatalib.automata.transout.impl.compact.CompactMealy;
+import net.automatalib.automata.transducers.impl.compact.CompactMealy;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.impl.SimpleAlphabet;
 
@@ -31,7 +31,7 @@ public class DOTImporter {
             if (line.contains("->")) {
                 transitions.add(line.split(" "));
             }
-            else if (line.contains("shape") && line.contains("circle")) {
+            else if (line.contains("s") && line.contains("label") && !line.contains("__")) {
                 String id = line.substring(0, line.indexOf(" "));
                 states.put(id, states.size());
             }
@@ -65,8 +65,12 @@ public class DOTImporter {
                 mealy.setInitialState(states.get(t[2].replace(";", "")));
                 continue;
             }
-            //System.out.println("T: " + states.get(t[0]) + " : " + t[3]  + " : " + states.get(t[2]) + " : " + t[5]);
+            //System.out.println("T: " + t[0] + " : " + t[3]  + " : " + t[2] + " : " + t[5]);
             mealy.setTransition(states.get(t[0]), t[3], states.get(t[2]), t[5]);
+        }
+
+        if (mealy.getInitialStates().isEmpty()) {
+            mealy.setInitialState(states.get("s0"));
         }
 
         return mealy;

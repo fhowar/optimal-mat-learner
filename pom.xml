@@ -14,29 +14,15 @@
     <dependencies>
         <!-- LearnLib dependencies -->
         <dependency>
-            <groupId>de.learnlib</groupId>
-            <artifactId>learnlib-core</artifactId>
-            <version>0.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.learnlib</groupId>
-            <artifactId>learnlib-cache</artifactId>
-            <version>0.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.learnlib</groupId>
-            <artifactId>learnlib-basic-eqtests</artifactId>
-            <version>0.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.learnlib</groupId>
-            <artifactId>learnlib-simulator</artifactId>
-            <version>0.12.0</version>
+            <groupId>de.learnlib.distribution</groupId>
+            <artifactId>learnlib-distribution</artifactId>
+            <version>0.14.0</version>
+            <type>pom</type>
         </dependency>
 
 
         <!-- AutomataLib dependencies -->
-        <dependency>
+        <!-- dependency>
             <groupId>net.automatalib</groupId>
             <artifactId>automata-api</artifactId>
             <version>0.6.0</version>
@@ -50,7 +36,7 @@
             <groupId>net.automatalib</groupId>
             <artifactId>automata-util</artifactId>
             <version>0.6.0</version>
-        </dependency>
+        </dependency -->
 
         <dependency>
             <groupId>org.testng</groupId>

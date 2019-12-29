@@ -1,15 +1,16 @@
 package de.learnlib.optimalttt.mealy;
 
-import de.learnlib.api.EquivalenceOracle;
-import de.learnlib.api.MembershipOracle;
-import de.learnlib.eqtests.basic.SimulatorEQOracle;
-import de.learnlib.experiments.Experiment;
+
+import de.learnlib.api.oracle.EquivalenceOracle;
+import de.learnlib.api.oracle.MembershipOracle;
+import de.learnlib.filter.statistic.oracle.CounterOracle;
 import de.learnlib.importers.dot.DOTImporter;
-import de.learnlib.oracles.CounterOracle;
-import de.learnlib.oracles.SimulatorOracle;
-import de.learnlib.statistics.SimpleProfiler;
-import net.automatalib.automata.transout.MealyMachine;
-import net.automatalib.automata.transout.impl.compact.CompactMealy;
+import de.learnlib.oracle.equivalence.SimulatorEQOracle;
+import de.learnlib.oracle.membership.SimulatorOracle;
+import de.learnlib.util.Experiment;
+import de.learnlib.util.statistics.SimpleProfiler;
+import net.automatalib.automata.transducers.MealyMachine;
+import net.automatalib.automata.transducers.impl.compact.CompactMealy;
 import net.automatalib.util.automata.builders.AutomatonBuilders;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.impl.Alphabets;
@@ -32,7 +33,8 @@ public class OptimalTTTMealyTest {
 
         final int ceLength = 200;
         mealy = DOTImporter.read(OptimalTTTMealyTest.class.getResourceAsStream(
-                "/VerneMQ__two_client_will_retain.dot"));
+//                "/esm-manual-controller.dot"));
+                "/TCP_FreeBSD_Server.dot"));
         //mealy = constructMealy();
 
         Alphabet<String> inputs = mealy.getInputAlphabet();

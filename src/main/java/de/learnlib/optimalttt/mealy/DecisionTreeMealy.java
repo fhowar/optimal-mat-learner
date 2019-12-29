@@ -1,6 +1,7 @@
 package de.learnlib.optimalttt.mealy;
 
-import de.learnlib.api.MembershipOracle;
+
+import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.optimalttt.dt.Children;
 import de.learnlib.optimalttt.dt.DTLeaf;
 import de.learnlib.optimalttt.dt.DecisionTree;

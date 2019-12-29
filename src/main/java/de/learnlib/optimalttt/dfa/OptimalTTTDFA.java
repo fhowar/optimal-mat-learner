@@ -1,6 +1,6 @@
 package de.learnlib.optimalttt.dfa;
 
-import de.learnlib.api.MembershipOracle;
+import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.optimalttt.OptimalTTT;
 import de.learnlib.optimalttt.dt.DTInnerNode;
 import de.learnlib.optimalttt.dt.DTLeaf;
