@@ -16,6 +16,9 @@ import de.learnlib.optimalttt.pt.PrefixTree;
 import de.learnlib.optimalttt.st.SuffixTrie;
 import net.automatalib.words.Word;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  *
  * @author falk
@@ -52,18 +55,25 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
     }
 
     @Override
-    public boolean refineHypothesis(DefaultQuery<I, D> ce) {
-        //System.out.println("Refine with ce: " +  ce);
-        D hypOut = hypOutput(ce.getInput());
-        if (hypOut.equals(ce.getOutput())) {
-            return false;
+    public boolean refineHypothesis(DefaultQuery<I, D> counterexample) {
+        List<DefaultQuery<I, D>> ces = new ArrayList<>();
+        ces.add(counterexample);
+        boolean wasCe = false;
+        for (DefaultQuery<I, D> ce : ces) {
+            //System.out.println("Refine with ce: " +  ce);
+            D hypOut = hypOutput(ce.getInput());
+            if (hypOut.equals(ce.getOutput())) {
+                continue;
+                //return false;
+            }
+            do {
+                wasCe = true;
+                analyzeCounterexample(ce.getInput(), ce.getOutput(), ces);
+                makeConsistent();
+                hypOut = hypOutput(ce.getInput());
+            } while (!hypOut.equals(ce.getOutput()));
         }
-        do {
-            analyzeCounterexample(ce.getInput(), ce.getOutput());
-            makeConsistent();
-            hypOut = hypOutput(ce.getInput());
-        } while (!hypOut.equals(ce.getOutput()));
-        return true;
+        return wasCe;
     }
 
     @Override
@@ -78,7 +88,7 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         };
     }
     
-    private void analyzeCounterexample(Word<I> ce, D refOut) {
+    private void analyzeCounterexample(Word<I> ce, D refOut, List<DefaultQuery<I, D>> ces) {
         PTNode ua = null;
         int upper = maxSearchIndex(ce.length());
         int lower = 0;
@@ -122,6 +132,15 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
             ua = ptree.root().succ(ce.firstSymbol());
         }
         
+        // add witnesses
+        int mid = (upper + lower) / 2;
+        Word<I> sprime = ce.suffix(ce.length() - (mid +1));
+        DTLeaf<I, D> qnext = getState(ua.word());
+        for (PTNode<I> uprime : qnext.getShortPrefixes()) {
+            ces.add(new DefaultQuery<>(uprime.word().concat(sprime), ceqs.answerQuery(uprime.word(), sprime) ));
+        }
+        ces.add(new DefaultQuery<>(ua.word().concat(sprime), ceqs.answerQuery(ua.word(), sprime) ));
+
         //System.out.println("New short prefix (ce): " + ua.word());
         ua.makeShortPrefix();        
     }
