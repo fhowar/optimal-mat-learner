@@ -1,0 +1,26 @@
+digraph G {
+s0 [label="s0" peripheries=2];
+s1 [label="PIN verified"];
+s2 [label="waiting for confirmation"];
+s4 [label="unconfirmed cryptogram"];
+s0 -> s0  [label="SIGNDATA / LONG_ERROR"];
+s0 -> s0  [label="DISPLAY_TEXT / LONG_ERROR"];
+s0 -> s0  [label="USB8_CRYPTOGRAM / LONG_ERROR"];
+s0 -> s0  [label="ROBOT_OK / TIMEOUT"];
+s0 -> s1  [label="COMBINED_PIN / OK"];
+s1 -> s0  [label="USB8_CRYPTOGRAM / CRYPTOGRAM"];
+s1 -> s1  [label="ROBOT_OK / TIMEOUT"];
+s1 -> s1  [label="COMBINED_PIN / OK"];
+s1 -> s2  [label="SIGNDATA / OK"];
+s1 -> s2  [label="DISPLAY_TEXT / TIMEOUT"];
+s2 -> s1  [label="COMBINED_PIN / OK"];
+s2 -> s1  [label="ROBOT_OK / OK"];
+s2 -> s2  [label="SIGNDATA / OK"];
+s2 -> s2  [label="DISPLAY_TEXT / TIMEOUT"];
+s2 -> s4  [label="USB8_CRYPTOGRAM / CRYPTOGRAM"];
+s4 -> s0  [label="ROBOT_OK / OK"];
+s4 -> s1  [label="COMBINED_PIN / OK"];
+s4 -> s4  [label="SIGNDATA / LONG_ERROR"];
+s4 -> s4  [label="DISPLAY_TEXT / LONG_ERROR"];
+s4 -> s4  [label="USB8_CRYPTOGRAM / LONG_ERROR"];
+}

@@ -3,7 +3,8 @@ package de.learnlib.optimallstar;
 
 import de.learnlib.api.oracle.EquivalenceOracle;
 import de.learnlib.api.oracle.MembershipOracle;
-import de.learnlib.filter.statistic.oracle.CounterOracle;
+import de.learnlib.api.query.DefaultQuery;
+import de.learnlib.filter.statistic.oracle.MealyCounterOracle;
 import de.learnlib.importers.dot.DOTImporter;
 import de.learnlib.oracle.equivalence.SimulatorEQOracle;
 import de.learnlib.oracle.membership.SimulatorOracle;
@@ -11,12 +12,17 @@ import de.learnlib.util.Experiment;
 import de.learnlib.util.statistics.SimpleProfiler;
 import net.automatalib.automata.transducers.MealyMachine;
 import net.automatalib.automata.transducers.impl.compact.CompactMealy;
+import net.automatalib.util.automata.Automata;
 import net.automatalib.util.automata.builders.AutomatonBuilders;
 import net.automatalib.words.Alphabet;
+import net.automatalib.words.Word;
+import net.automatalib.words.WordBuilder;
 import net.automatalib.words.impl.Alphabets;
 import org.testng.annotations.Test;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Random;
 
 public class OptimalLStarMealyTest {
@@ -27,13 +33,13 @@ public class OptimalLStarMealyTest {
     public void testOptimalLStarMealy() throws IOException {
 
         final Random s = new Random();
-        long seed = s.nextLong();
+        long seed = 1130032374111885818L; //s.nextLong();
         System.out.println(seed);
         final Random r = new Random(seed);
 
-        final int ceLength = 200;
+        final int ceLength = 100;
         mealy = DOTImporter.read(OptimalLStarMealyTest.class.getResourceAsStream(
-                "/VerneMQ__two_client_will_retain.dot"));
+                "/learnresult_old_500_10-15_fix.dot"));
         //mealy = constructMealy();
 
         Alphabet<String> inputs = mealy.getInputAlphabet();
@@ -41,11 +47,11 @@ public class OptimalLStarMealyTest {
         MembershipOracle.MealyMembershipOracle<String, String> sul =
                 new SimulatorOracle.MealySimulatorOracle<>(mealy);
 
-        CounterOracle.MealyCounterOracle<String, String> mqOracle =
-                new CounterOracle.MealyCounterOracle<>(sul, "mq");
+        MealyCounterOracle<String, String> mqOracle =
+                new MealyCounterOracle<>(sul, "mq");
 
-        CounterOracle.MealyCounterOracle<String, String> ceOracle =
-                new CounterOracle.MealyCounterOracle<>(sul, "ce");
+        MealyCounterOracle<String, String> ceOracle =
+                new MealyCounterOracle<>(sul, "ce");
 
 
         // construct L* instance
@@ -54,13 +60,15 @@ public class OptimalLStarMealyTest {
 
 
         EquivalenceOracle.MealyEquivalenceOracle<String, String> eqOracle =
-               new SimulatorEQOracle.MealySimulatorEQOracle<>(mealy);
-//                new EquivalenceOracle.MealyEquivalenceOracle<String, String> {
-//                    @Override
-//                    public DefaultQuery findCounterExample(Object a, Collection clctn) {
-//                        return generateCounterexample( (DFA<?,Character>)a, ceLength, r);
-//                    }
-//                };
+//               new SimulatorEQOracle.MealySimulatorEQOracle<>(mealy);
+                new EquivalenceOracle.MealyEquivalenceOracle<String, String>() {
+                    @Nullable
+                    @Override
+                    public DefaultQuery<String, Word<String>> findCounterExample(
+                            MealyMachine<?, String, ?, String> hyp, Collection<? extends String> collection) {
+                        return generateCounterexample( r, mealy, hyp, ceLength);
+                    }
+                };
 
         Experiment.MealyExperiment<String, String> experiment =
                 new Experiment.MealyExperiment<>(lstar, eqOracle, inputs);
@@ -73,6 +81,8 @@ public class OptimalLStarMealyTest {
 
         // run experiment
         experiment.run();
+
+        lstar.assertShortPrefixes();
 
         // get learned model
         MealyMachine<?, String, ?, String> result = experiment.getFinalHypothesis();
@@ -104,6 +114,47 @@ public class OptimalLStarMealyTest {
 
     }
 
+    private static <I,O> DefaultQuery<I, Word<O>>
+    generateCounterexample(Random random, CompactMealy<I, O> target,
+                           MealyMachine<?,I,?,O> hypothesis, int ceLength) {
+        Alphabet<I> alphabet = target.getInputAlphabet();
+
+        if(Automata.findSeparatingWord(target, hypothesis, alphabet) == null) {
+            return null;
+        }
+
+        Word<I> ce = Automata.findSeparatingWord(target, hypothesis, alphabet);
+        if(ce == null) {
+            return null;
+        }
+
+        Word<I> word = null;
+
+        for (int i=0; i<10000; i++) {
+            WordBuilder<I> wb = new WordBuilder<>();
+            for(int j = 0; j < ceLength; j++) {
+                wb.append(alphabet.getSymbol(random.nextInt(alphabet.size())));
+            }
+            word = wb.toWord();
+            Word<O> out1 = target.computeOutput(word);
+            Word<O> out2 = hypothesis.computeOutput(word);
+            if ( !out1.equals(out2) ) {
+                int k = 0;
+                while (out1.getSymbol(k).equals(out2.getSymbol(k))) {
+                    k++;
+                }
+                word = word.prefix(k+1);
+                break;
+            }
+            word = null;
+        }
+
+        if (word == null) {
+            word = ce;
+        }
+
+        return new DefaultQuery<>(word, target.computeOutput(word));
+    }
 
     private CompactMealy<String, String> constructMealy() {
         // input alphabet contains characters 'a'..'b'

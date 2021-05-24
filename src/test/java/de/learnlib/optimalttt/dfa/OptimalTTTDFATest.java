@@ -9,7 +9,7 @@ package de.learnlib.optimalttt.dfa;
 import de.learnlib.api.oracle.EquivalenceOracle;
 import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.api.query.DefaultQuery;
-import de.learnlib.filter.statistic.oracle.CounterOracle;
+import de.learnlib.filter.statistic.oracle.DFACounterOracle;
 import de.learnlib.oracle.membership.SimulatorOracle;
 import de.learnlib.util.Experiment;
 import de.learnlib.util.statistics.SimpleProfiler;
@@ -55,11 +55,11 @@ public class OptimalTTTDFATest {
         MembershipOracle.DFAMembershipOracle<Character> sul =
                 new SimulatorOracle.DFASimulatorOracle<>(dfa);
 
-        CounterOracle.DFACounterOracle<Character> mqOracle =
-                new CounterOracle.DFACounterOracle<>(sul, "mq");
+        DFACounterOracle<Character> mqOracle =
+                new DFACounterOracle<>(sul, "mq");
 
-        CounterOracle.DFACounterOracle<Character> ceOracle =
-                new CounterOracle.DFACounterOracle<>(sul, "ce");
+        DFACounterOracle<Character> ceOracle =
+                new DFACounterOracle<>(sul, "ce");
 
         OptimalTTTDFA ttt = new OptimalTTTDFA(mqOracle, ceOracle, inputs);
         

@@ -3,7 +3,7 @@ package de.learnlib.importers.dot;
 
 import net.automatalib.automata.transducers.impl.compact.CompactMealy;
 import net.automatalib.words.Alphabet;
-import net.automatalib.words.impl.SimpleAlphabet;
+import net.automatalib.words.impl.MapAlphabet;
 
 import javax.annotation.WillClose;
 import java.io.*;
@@ -53,7 +53,7 @@ public class DOTImporter {
         }
 
         // basic automaton
-        Alphabet<String> sigma = new SimpleAlphabet<>(inputs);
+        Alphabet<String> sigma = new MapAlphabet<>(inputs);
         CompactMealy<String, String> mealy = new CompactMealy<>(sigma);
         for (int i=0; i< states.size(); i++) {
             mealy.addState();

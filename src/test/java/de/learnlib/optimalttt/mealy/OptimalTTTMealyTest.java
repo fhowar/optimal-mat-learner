@@ -3,9 +3,9 @@ package de.learnlib.optimalttt.mealy;
 
 import de.learnlib.api.oracle.EquivalenceOracle;
 import de.learnlib.api.oracle.MembershipOracle;
-import de.learnlib.filter.statistic.oracle.CounterOracle;
+import de.learnlib.filter.statistic.oracle.MealyCounterOracle;
 import de.learnlib.importers.dot.DOTImporter;
-import de.learnlib.oracle.equivalence.SimulatorEQOracle;
+import de.learnlib.oracle.equivalence.MealySimulatorEQOracle;
 import de.learnlib.oracle.membership.SimulatorOracle;
 import de.learnlib.util.Experiment;
 import de.learnlib.util.statistics.SimpleProfiler;
@@ -42,11 +42,11 @@ public class OptimalTTTMealyTest {
         MembershipOracle.MealyMembershipOracle<String, String> sul =
                 new SimulatorOracle.MealySimulatorOracle<>(mealy);
 
-        CounterOracle.MealyCounterOracle<String, String> mqOracle =
-                new CounterOracle.MealyCounterOracle<>(sul, "mq");
+        MealyCounterOracle<String, String> mqOracle =
+                new MealyCounterOracle<>(sul, "mq");
 
-        CounterOracle.MealyCounterOracle<String, String> ceOracle =
-                new CounterOracle.MealyCounterOracle<>(sul, "ce");
+        MealyCounterOracle<String, String> ceOracle =
+                new MealyCounterOracle<>(sul, "ce");
 
 
         // construct L* instance
@@ -55,7 +55,7 @@ public class OptimalTTTMealyTest {
 
 
         EquivalenceOracle.MealyEquivalenceOracle<String, String> eqOracle =
-               new SimulatorEQOracle.MealySimulatorEQOracle<>(mealy);
+               new MealySimulatorEQOracle<>(mealy);
 //                new EquivalenceOracle.MealyEquivalenceOracle<String, String> {
 //                    @Override
 //                    public DefaultQuery findCounterExample(Object a, Collection clctn) {

@@ -55,15 +55,25 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
 
     @Override
     public boolean refineHypothesis(DefaultQuery<I, D> dq) {
-        //System.out.println("Refine hypothesis with counterexample: " + dq);
+        //System.out.println("### Refine hypothesis with counterexample: " + dq);
         this.counterexample = dq;        
         while(counterExampleValid()) {
             analyzeCounterexample();
             learnLoop();
         }
-        
-        assert size() == shortPrefixes.size();
+
+        if (size() != shortPrefixes.size()) {
+            //System.out.println(size() + " : " + shortPrefixes.size());
+            //System.out.println("ce: " + dq.getInput() + ", is valid: " + counterExampleValid());
+
+            //assert false;
+        }
+        //assert size() == shortPrefixes.size();
         return true;
+    }
+
+    public void assertShortPrefixes() {
+        assert size() == shortPrefixes.size();
     }
 
     @Override
@@ -109,7 +119,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             }
             for (Word<I> u : getShortPrefixes(rowData)) {
                 D sysOut = suffix(ceqs.answerQuery(u, suffix), suffix.length());
-                //System.out.println("  Short prefix: " + u + " : " + sysOut);
+                //System.out.println("  Short prefix: " + u + " : " + sysOut + " : " + suffix(hypOut, suffix.size()));
                 if (!sysOut.equals(suffix(hypOut, suffix.size()))) {
                     //System.out.println("Still counterexample - moving right");
                     ua = u.append(suffix.firstSymbol());
@@ -136,6 +146,7 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
     
     private boolean counterExampleValid() {
         D hypOut = getOutput(counterexample.getInput());
+        //System.out.println("valid: " + hypOut + " : " + counterexample.getOutput());
         return !hypOut.equals(counterexample.getOutput());
     }
     

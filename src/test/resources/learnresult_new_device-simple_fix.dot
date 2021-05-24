@@ -1,0 +1,20 @@
+digraph G {
+s0 [label="s0" peripheries=2];
+s1 [label="PIN verified"];
+s2 [label="waiting for confirmation"];
+s0 -> s0  [label="SIGNDATA / LONG_ERROR"];
+s0 -> s0  [label="DISPLAY_TEXT / LONG_ERROR"];
+s0 -> s0  [label="GEN_CRYPTOGRAM / LONG_ERROR"];
+s0 -> s0  [label="ROBOT_OK / TIMEOUT"];
+s0 -> s1  [label="COMBINED_PIN / OK"];
+s1 -> s2  [label="SIGNDATA / OK"];
+s1 -> s2  [label="DISPLAY_TEXT / TIMEOUT"];
+s1 -> s0  [label="GEN_CRYPTOGRAM / CRYPTOGRAM"];
+s1 -> s1  [label="COMBINED_PIN / OK"];
+s1 -> s1  [label="ROBOT_OK / TIMEOUT"];
+s2 -> s2  [label="SIGNDATA / LONG_ERROR"];
+s2 -> s2  [label="DISPLAY_TEXT / LONG_ERROR"];
+s2 -> s1  [label="COMBINED_PIN / OK"];
+s2 -> s1  [label="ROBOT_OK / OK"];
+s2 -> s2  [label="GEN_CRYPTOGRAM / LONG_ERROR"];
+}

@@ -59,7 +59,7 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         List<DefaultQuery<I, D>> ces = new ArrayList<>();
         ces.add(counterexample);
         boolean wasCe = false;
-        for (DefaultQuery<I, D> ce : ces) {
+        for (DefaultQuery<I, D> ce : new ArrayList<>(ces)) {
             //System.out.println("Refine with ce: " +  ce);
             D hypOut = hypOutput(ce.getInput());
             if (hypOut.equals(ce.getOutput())) {
