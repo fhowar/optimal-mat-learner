@@ -35,9 +35,9 @@ public class OptimalLStarMealy<I, O> extends ObservationTable<MealyMachine<?, I,
     }
 
     @Override
-    public Word<O> getOutput(Word<I> input) {
+    public Word<O> getOutput(Word<I> input, int length) {
         assert !input.isEmpty();
-        return hypothesis.computeOutput(input);
+        return hypothesis.computeOutput(input).suffix(length);
     }
 
     @Override

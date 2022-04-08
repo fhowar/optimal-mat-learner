@@ -16,8 +16,10 @@ import de.learnlib.optimalttt.pt.PrefixTree;
 import de.learnlib.optimalttt.st.SuffixTrie;
 import net.automatalib.words.Word;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  *
@@ -37,7 +39,7 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
 
     protected abstract int maxSearchIndex(int ceLength);
 
-    abstract protected D hypOutput(Word<I> word);
+    abstract protected D hypOutput(Word<I> word, int length);
 
     abstract protected DTLeaf<I, D> getState(Word<I> prefix);
 
@@ -56,24 +58,37 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
 
     @Override
     public boolean refineHypothesis(DefaultQuery<I, D> counterexample) {
-        List<DefaultQuery<I, D>> ces = new ArrayList<>();
-        ces.add(counterexample);
-        boolean wasCe = false;
-        for (DefaultQuery<I, D> ce : ces) {
-            //System.out.println("Refine with ce: " +  ce);
-            D hypOut = hypOutput(ce.getInput());
-            if (hypOut.equals(ce.getOutput())) {
-                continue;
-                //return false;
-            }
-            do {
-                wasCe = true;
-                analyzeCounterexample(ce.getInput(), ce.getOutput(), ces);
-                makeConsistent();
-                hypOut = hypOutput(ce.getInput());
-            } while (!hypOut.equals(ce.getOutput()));
+        Set<DefaultQuery<I, D>> witnesses = new LinkedHashSet<>();
+        witnesses.add(counterexample);
+        boolean refined = refineWithWitness(counterexample, witnesses);
+        if (!refined) {
+            return false;
         }
-        return wasCe;
+        do {
+            for (DefaultQuery<I, D> w : witnesses) {
+                refined = refineWithWitness(w, witnesses);
+                if (refined) {
+                    break;
+                }
+            }
+
+        } while (refined);
+        return true;
+    }
+
+    private boolean refineWithWitness(DefaultQuery<I, D> counterexample, Set<DefaultQuery<I, D>> witnesses) {
+        D hypOut = hypOutput(counterexample.getInput(), counterexample.getSuffix().length());
+        // System.out.println("refineWithWitness: " + counterexample.getPrefix() + " : " + counterexample.getSuffix());
+        // System.out.println(counterexample.getOutput() + " <-> " + hypOut);
+        if (hypOut.equals(counterexample.getOutput())) {
+            return false;
+        }
+        do {
+            analyzeCounterexample(counterexample.getInput(), counterexample.getOutput(), witnesses);
+            makeConsistent();
+            hypOut = hypOutput(counterexample.getInput(), counterexample.getSuffix().length());
+        } while (!hypOut.equals(counterexample.getOutput()));
+        return true;
     }
 
     @Override
@@ -88,12 +103,12 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         };
     }
     
-    private void analyzeCounterexample(Word<I> ce, D refOut, List<DefaultQuery<I, D>> ces) {
+    private void analyzeCounterexample(Word<I> ce, D refOut, Set<DefaultQuery<I, D>> witnesses) {
         PTNode ua = null;
         int upper = maxSearchIndex(ce.length());
         int lower = 0;
         //System.out.println("Hyp: " + hypOutput(ce));
-        D hypOut = hypOutput(ce);
+        D hypOut = hypOutput(ce, ce.length());
         while (upper - lower > 1) {
             int mid = (upper + lower) / 2;
             //System.out.println("Index: " + mid);
@@ -134,12 +149,12 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         
         // add witnesses
         int mid = (upper + lower) / 2;
-        Word<I> sprime = ce.suffix(ce.length() - (mid +1));
+        Word<I> sprime = ce.suffix(ce.length() - mid);
         DTLeaf<I, D> qnext = getState(ua.word());
         for (PTNode<I> uprime : qnext.getShortPrefixes()) {
-            ces.add(new DefaultQuery<>(uprime.word().concat(sprime), ceqs.answerQuery(uprime.word(), sprime) ));
+            witnesses.add(new DefaultQuery<>(uprime.word(), sprime, ceqs.answerQuery(uprime.word(), sprime) ));
         }
-        ces.add(new DefaultQuery<>(ua.word().concat(sprime), ceqs.answerQuery(ua.word(), sprime) ));
+        witnesses.add(new DefaultQuery<>(ua.word(), sprime, ceqs.answerQuery(ua.word(), sprime) ));
 
         //System.out.println("New short prefix (ce): " + ua.word());
         ua.makeShortPrefix();        

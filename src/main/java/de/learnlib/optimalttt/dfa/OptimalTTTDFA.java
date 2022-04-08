@@ -50,6 +50,10 @@ public class OptimalTTTDFA<I> extends OptimalTTT<DFA<?, I>, I, Boolean> {
     }
 
     @Override
+    protected Boolean hypOutput(Word<I> word, int length) {
+        return hypOutput(word);
+    }
+
     protected Boolean hypOutput(Word<I> word) {
         DTLeaf<I, Boolean> s = getState(word);
         return dtree.isAccepting(s);

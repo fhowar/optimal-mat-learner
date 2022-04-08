@@ -41,8 +41,8 @@ public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, 
     }
 
     @Override
-    protected Word<O> hypOutput(Word<I> word) {
-        return hypothesis.computeOutput(word);
+    protected Word<O> hypOutput(Word<I> word, int length) {
+        return hypothesis.computeOutput(word).suffix(length);
     }
 
     @Override
