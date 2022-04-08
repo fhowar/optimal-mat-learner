@@ -22,10 +22,6 @@ import java.io.InputStream;
 import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 
-import javax.annotation.WillClose;
-import javax.annotation.WillCloseWhenClosed;
-import javax.annotation.WillNotClose;
-
 import net.automatalib.automata.fsa.impl.compact.CompactDFA;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.impl.Alphabets;
@@ -38,9 +34,9 @@ import net.automatalib.words.impl.Alphabets;
  *
  */
 public class AUTImporter {
-	
-	@WillCloseWhenClosed 
-	public static InputStream uncompressed(@WillNotClose InputStream is) throws IOException {
+
+
+	public static InputStream uncompressed(InputStream is) throws IOException {
 		BufferedInputStream bis = new BufferedInputStream(is);
 		bis.mark(2);
 		byte[] header = new byte[2];
@@ -56,7 +52,7 @@ public class AUTImporter {
 	}
 	
 	
-	public static CompactDFA<Character> read(@WillClose InputStream is) throws IOException {
+	public static CompactDFA<Character> read(InputStream is) throws IOException {
 		try(Scanner sc = new Scanner(uncompressed(is))) {
 			int numStates = sc.nextInt();
 			int numSymbols = sc.nextInt();

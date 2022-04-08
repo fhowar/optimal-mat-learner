@@ -4,6 +4,8 @@ package de.learnlib.optimallstar;
 import de.learnlib.api.algorithm.LearningAlgorithm;
 import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.api.query.DefaultQuery;
+import de.learnlib.optimalttt.dt.DTLeaf;
+import de.learnlib.optimalttt.pt.PTNode;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
@@ -29,8 +31,6 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
 
     private final Map<Word<I>, D[]> rows = new LinkedHashMap<>();
 
-    private DefaultQuery<I, D> counterexample = null;
-
     abstract Word<I>[] initSuffixes();
 
     abstract D[] newRowVector(int i);
@@ -54,22 +54,37 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
     }
 
     @Override
-    public boolean refineHypothesis(DefaultQuery<I, D> dq) {
-        //System.out.println("### Refine hypothesis with counterexample: " + dq);
-        this.counterexample = dq;        
-        while(counterExampleValid()) {
-            analyzeCounterexample();
+    public boolean refineHypothesis(DefaultQuery<I, D> counterexample) {
+        Set<DefaultQuery<I, D>> witnesses = new LinkedHashSet<>();
+        witnesses.add(counterexample);
+        boolean refined = refineWithWitness(counterexample, witnesses);
+        if (!refined) {
+            return false;
+        }
+        do {
+            for (DefaultQuery<I, D> w : witnesses) {
+                refined = refineWithWitness(w, witnesses);
+                if (refined) {
+                    break;
+                }
+            }
+
+        } while (refined);
+        System.out.println("Sizes: " + size() + " =? " + shortPrefixes.size());
+        assert size() == shortPrefixes.size();
+        return true;
+    }
+
+    private boolean refineWithWitness(DefaultQuery<I, D> counterexample, Set<DefaultQuery<I, D>> witnesses) {
+        //System.out.println("Refine hypothesis with counterexample: " + dq);
+        boolean valid = false;
+        while(counterExampleValid(counterexample)) {
+            valid = true;
+            analyzeCounterexample(counterexample, witnesses);
             learnLoop();
         }
-
-        if (size() != shortPrefixes.size()) {
-            //System.out.println(size() + " : " + shortPrefixes.size());
-            //System.out.println("ce: " + dq.getInput() + ", is valid: " + counterExampleValid());
-
-            //assert false;
-        }
-        //assert size() == shortPrefixes.size();
-        return true;
+        
+        return valid;
     }
 
     public void assertShortPrefixes() {
@@ -97,12 +112,12 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
         addShortPrefix(epsilon);
     }
 
-    private void analyzeCounterexample() {
+    private void analyzeCounterexample(DefaultQuery<I, D> counterexample, Set<DefaultQuery<I, D>> witnesses) {
         Word<I> ceInput = counterexample.getInput();
         Word<I> ua = null;
         int upper=maxSearchIndex(ceInput.length());
         int lower=0;
-        D hypOut = getOutput(ceInput);
+        D hypOut = getOutput(ceInput, ceInput.length());
         while (upper - lower > 1) {
             int mid = (upper + lower) / 2;
             //System.out.println("Index: " + mid);
@@ -139,14 +154,23 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
             assert upper == 1;
             ua = ceInput.prefix(1);
         }
-        
+
+        // add witnesses
+        int mid = (upper + lower) / 2;
+        Word<I> sprime = ceInput.suffix(ceInput.length() - (mid+1) );
+        D[] rnext = getRow(ua);
+        for (Word<I> uprime : getShortPrefixes(rnext)) {
+            witnesses.add(new DefaultQuery<>(uprime, sprime, ceqs.answerQuery(uprime, sprime) ));
+        }
+        witnesses.add(new DefaultQuery<>(ua, sprime, ceqs.answerQuery(ua, sprime) ));
+
         //System.out.println("ua " + ua);
         addShortPrefix(ua);
     }
     
-    private boolean counterExampleValid() {
-        D hypOut = getOutput(counterexample.getInput());
-        //System.out.println("valid: " + hypOut + " : " + counterexample.getOutput());
+    private boolean counterExampleValid(DefaultQuery<I,D> counterexample) {
+        assert counterexample.getSuffix().length() != 0;
+        D hypOut = getOutput(counterexample.getInput(), counterexample.getSuffix().length());
         return !hypOut.equals(counterexample.getOutput());
     }
     

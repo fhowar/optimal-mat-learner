@@ -5,7 +5,6 @@ import net.automatalib.automata.transducers.impl.compact.CompactMealy;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.impl.MapAlphabet;
 
-import javax.annotation.WillClose;
 import java.io.*;
 import java.util.*;
 
@@ -18,7 +17,7 @@ import java.util.*;
 public class DOTImporter {
 
 
-    public static CompactMealy<String, String> read(@WillClose InputStream is) throws IOException {
+    public static CompactMealy<String, String> read(InputStream is) throws IOException {
 
         BufferedReader r = new BufferedReader(new InputStreamReader(is));
         LinkedHashMap<String,Integer> states = new LinkedHashMap<>();

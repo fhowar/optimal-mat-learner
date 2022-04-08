@@ -92,7 +92,7 @@ public class OptimalLStarDFA<I> extends ObservationTable<DFA<?, I>, I, Boolean>
     }
 
     @Override
-    public Boolean getOutput(Word<I> input) {
+    public Boolean getOutput(Word<I> input, int length) {
         return hypothesis.accepts(input);
     }
 

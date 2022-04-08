@@ -8,7 +8,7 @@ interface Hypothesis<M, I, D> {
 
     D[] rowForState(Word<I> input);
 
-    D getOutput(Word<I> input);
+    D getOutput(Word<I> input, int length);
 
     M getModel();
 }

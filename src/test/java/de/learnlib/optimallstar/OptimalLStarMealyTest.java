@@ -20,7 +20,6 @@ import net.automatalib.words.WordBuilder;
 import net.automatalib.words.impl.Alphabets;
 import org.testng.annotations.Test;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Random;
@@ -62,7 +61,6 @@ public class OptimalLStarMealyTest {
         EquivalenceOracle.MealyEquivalenceOracle<String, String> eqOracle =
 //               new SimulatorEQOracle.MealySimulatorEQOracle<>(mealy);
                 new EquivalenceOracle.MealyEquivalenceOracle<String, String>() {
-                    @Nullable
                     @Override
                     public DefaultQuery<String, Word<String>> findCounterExample(
                             MealyMachine<?, String, ?, String> hyp, Collection<? extends String> collection) {

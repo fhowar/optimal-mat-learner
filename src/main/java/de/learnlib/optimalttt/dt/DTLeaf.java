@@ -63,6 +63,7 @@ public class DTLeaf<I, D> extends DTNode<I, D> {
     }
 
     public void makeShortPrefix(PTNode<I> uNew) {
+        assert !shortPrefixes.contains(uNew);
         assert longPrefixes.contains(uNew);
         longPrefixes.remove(uNew);
         shortPrefixes.add(uNew);

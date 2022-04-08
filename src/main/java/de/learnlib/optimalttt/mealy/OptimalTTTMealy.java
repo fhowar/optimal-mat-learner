@@ -11,8 +11,6 @@ import net.automatalib.automata.transducers.MealyMachine;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
-import javax.annotation.Nonnull;
-
 public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, I, Word<O>>
         implements LearningAlgorithm.MealyLearner<I, O> {
 
@@ -41,8 +39,8 @@ public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, 
     }
 
     @Override
-    protected Word<O> hypOutput(Word<I> word) {
-        return hypothesis.computeOutput(word);
+    protected Word<O> hypOutput(Word<I> word, int length) {
+        return hypothesis.computeOutput(word).suffix(length);
     }
 
     @Override
