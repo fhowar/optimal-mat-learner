@@ -40,6 +40,11 @@ public class OptimalLStarDFA<I> extends ObservationTable<DFA<?, I>, I, Boolean>
     }
 
     @Override
+    boolean symbolInconsistency(Word<I> u1, Word<I> u2, I a) {
+        return false;
+    }
+
+    @Override
     void automatonFromTable() {
         hypStateMap.clear();
         FastDFA<I> hyp = new FastDFA<>(getSigma());

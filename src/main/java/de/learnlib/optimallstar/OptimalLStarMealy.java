@@ -47,11 +47,7 @@ public class OptimalLStarMealy<I, O> extends ObservationTable<MealyMachine<?, I,
 
     @Override
     Word<I>[] initSuffixes() {
-        Word<I>[] suffixes = new Word[getSigma().size()];
-        int i=0;
-        for (I a : getSigma()) {
-            suffixes[i++] = Word.fromLetter(a);
-        }
+        Word<I>[] suffixes = new Word[0];
         return suffixes;
     }
 
@@ -62,7 +58,21 @@ public class OptimalLStarMealy<I, O> extends ObservationTable<MealyMachine<?, I,
 
     @Override
     int maxSearchIndex(int ceLength) {
-        return ceLength-1;
+        return ceLength;
+    }
+
+    @Override
+    boolean symbolInconsistency(Word<I> u1, Word<I> u2, I a) {
+        O o1 = mqs.answerQuery(u1.append(a)).lastSymbol();
+        O o2 = mqs.answerQuery(u2.append(a)).lastSymbol();
+        if (!o1.equals(o2)) {
+            Word<I>[] tmpSuffixes = suffixes;
+            suffixes = new Word[suffixes.length+1];
+            System.arraycopy(tmpSuffixes, 0, suffixes, 0, tmpSuffixes.length);
+            suffixes[suffixes.length-1] = Word.fromLetter(a);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -92,7 +102,8 @@ public class OptimalLStarMealy<I, O> extends ObservationTable<MealyMachine<?, I,
                 Word<O>[] destData = getRow(u.append(a));
                 assert destData != null;
                 FastMealyState<O> dst = stateMap.get(Arrays.asList(destData));
-                O o = srcData[getSigma().getSymbolIndex(a)].lastSymbol();
+                //O o = srcData[getSigma().getSymbolIndex(a)].lastSymbol();
+                O o = mqs.answerQuery(u.append(a)).lastSymbol();
                 //System.out.println(Arrays.toString(destData) + " " + dst);
                 //System.out.println("Transition: " + u + " (" +
                 //        e.getKey().isAccepting() + ") -" + a + "-> " +

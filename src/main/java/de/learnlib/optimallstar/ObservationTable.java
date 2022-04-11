@@ -21,11 +21,11 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
 
     private final Alphabet<I> sigma;
 
-    private final MembershipOracle<I,D> mqs;
+    final MembershipOracle<I,D> mqs;
 
     private final MembershipOracle<I, D> ceqs;
 
-    private Word<I>[] suffixes = null;
+    Word<I>[] suffixes = null;
 
     private final Set<Word<I>> shortPrefixes = new LinkedHashSet<>();
 
@@ -217,11 +217,16 @@ public abstract class ObservationTable<M, I, D> implements LearningAlgorithm<M, 
                         return true;
                     }
                 }
-            }          
+            }
+            if (symbolInconsistency(u1, u2, a)) {
+                return true;
+            }
         }
         return false;
     }
-    
+
+    abstract boolean symbolInconsistency(Word<I> u1, Word<I> u2, I a);
+
     private List<Word<I>> getShortPrefixes(Word<I> prefix) {
         D[] rowData = rows.get(prefix);
         return getShortPrefixes(rowData);
