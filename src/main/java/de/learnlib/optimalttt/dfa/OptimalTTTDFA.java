@@ -58,4 +58,9 @@ public class OptimalTTTDFA<I> extends OptimalTTT<DFA<?, I>, I, Boolean> {
         DTLeaf<I, Boolean> s = getState(word);
         return dtree.isAccepting(s);
     }
+
+    @Override
+    protected boolean canonic() {
+        return hypothesis.getStates().stream().filter( it -> it.getShortPrefixes().size() > 1).count() == 0;
+    }
 }

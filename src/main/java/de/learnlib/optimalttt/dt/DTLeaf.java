@@ -49,15 +49,24 @@ public class DTLeaf<I, D> extends DTNode<I, D> {
     }
 
     private boolean refineIfPossible(PTNode<I> u1, PTNode<I> u2) {
+        I bestA = null;
+        int vLength = 0;
         for (I a : tree.sigma()) {
             //System.out.println(u1.word() + " : " + u2.word());
             DTLeaf<I, D> ua1 = u1.succ(a).state();
             DTLeaf<I, D> ua2 = u2.succ(a).state();
 
             if (ua1 != ua2) {
-                split(u1, u2, a);
-                return true;
+                int l = ((DTInnerNode<I, ?>) lca(ua1, ua2)).suffix().word().length();
+                if (bestA == null || l < vLength) {
+                    vLength = l;
+                    bestA = a;
+                }
             }
+        }
+        if (bestA != null) {
+            split(u1, u2, bestA);
+            return true;
         }
         return false;
     }

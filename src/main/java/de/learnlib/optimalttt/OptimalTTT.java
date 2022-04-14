@@ -54,6 +54,8 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         makeConsistent();
     }
 
+    protected abstract boolean canonic();
+
     @Override
     public boolean refineHypothesis(DefaultQuery<I, D> counterexample) {
         Set<DefaultQuery<I, D>> witnesses = new LinkedHashSet<>();
@@ -62,6 +64,11 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
         if (!refined) {
             return false;
         }
+
+        if (canonic()) {
+            return true;
+        }
+
         do {
             for (DefaultQuery<I, D> w : witnesses) {
                 refined = refineWithWitness(w, witnesses);
@@ -70,11 +77,14 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
                 }
             }
 
-        } while (refined);
+        } while (refined && !canonic());
         return true;
     }
 
     private boolean refineWithWitness(DefaultQuery<I, D> counterexample, Set<DefaultQuery<I, D>> witnesses) {
+        if (counterexample.getOutput() == null) {
+            counterexample.answer(ceqs.answerQuery(counterexample.getInput()));
+        }
         D hypOut = hypOutput(counterexample.getInput(), counterexample.getSuffix().length());
         // System.out.println("refineWithWitness: " + counterexample.getPrefix() + " : " + counterexample.getSuffix());
         // System.out.println(counterexample.getOutput() + " <-> " + hypOut);
@@ -100,11 +110,23 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
             // do nothing ...
         };
     }
-    
+
+    private int longestShortPrefixOf(Word<I> ce) {
+        PTNode cur = ptree.root();
+        Word<I> prefix = cur.word();
+        do {
+            cur = cur.succ(ce.getSymbol(prefix.length()));
+        }
+        while (cur.state().getShortPrefixes().contains(cur));
+
+        return cur.word().length() -1;
+    }
+
     private void analyzeCounterexample(Word<I> ce, D refOut, Set<DefaultQuery<I, D>> witnesses) {
+        int lsp = longestShortPrefixOf(ce);
         PTNode ua = null;
         int upper = maxSearchIndex(ce.length());
-        int lower = 0;
+        int lower = lsp-1;
         //System.out.println("Hyp: " + hypOutput(ce));
         D hypOut = hypOutput(ce, ce.length());
         while (upper - lower > 1) {
@@ -138,22 +160,24 @@ public abstract class OptimalTTT<M, I, D> implements LearningAlgorithm<M, I, D> 
             }
             //System.out.println("No counterexample - moving left");
             upper = mid;   
-        } 
-        
-        if (ua == null) {
-            assert upper == 1;
-            ua = ptree.root().succ(ce.firstSymbol());
         }
         
+        if (ua == null) {
+            assert upper == lsp;
+            ua = ptree.root();
+            for (int i=0; i<upper; i++) {
+                ua = ua.succ(ce.getSymbol(i));
+            }
+        }
+
         // add witnesses
         int mid = (upper + lower) / 2;
         Word<I> sprime = ce.suffix(ce.length() - (mid+1) );
         DTLeaf<I, D> qnext = getState(ua.word());
         for (PTNode<I> uprime : qnext.getShortPrefixes()) {
-            witnesses.add(new DefaultQuery<>(uprime.word(), sprime, ceqs.answerQuery(uprime.word(), sprime) ));
+            witnesses.add(new DefaultQuery<>(uprime.word(), sprime ));
         }
-        witnesses.add(new DefaultQuery<>(ua.word(), sprime, ceqs.answerQuery(ua.word(), sprime) ));
-
+        witnesses.add(new DefaultQuery<>(ua.word(), sprime));
         //System.out.println("New short prefix (ce): " + ua.word());
         ua.makeShortPrefix();        
     }

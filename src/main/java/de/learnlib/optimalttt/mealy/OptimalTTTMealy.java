@@ -72,4 +72,8 @@ public class OptimalTTTMealy<I, O> extends OptimalTTT<MealyMachine<?, I, ?, O>, 
         return output.suffix(length);
     }
 
+    @Override
+    protected boolean canonic() {
+        return hypothesis.getStates().stream().filter( it -> it.getShortPrefixes().size() > 1).count() == 0;
+    }
 }

@@ -6,10 +6,18 @@
 package de.learnlib.optimalttt.dfa;
 
 
+import de.learnlib.algorithms.ttt.dfa.TTTLearnerDFA;
+import de.learnlib.algorithms.ttt.dfa.TTTLearnerDFABuilder;
+import de.learnlib.algorithms.ttt.mealy.TTTLearnerMealyBuilder;
 import de.learnlib.api.oracle.EquivalenceOracle;
 import de.learnlib.api.oracle.MembershipOracle;
 import de.learnlib.api.query.DefaultQuery;
+import de.learnlib.filter.cache.dfa.DFACacheOracle;
 import de.learnlib.filter.statistic.oracle.DFACounterOracle;
+import de.learnlib.importers.aut.AUTImporter;
+import de.learnlib.optimallstar.OptimalLStarDFATest;
+import de.learnlib.oracle.equivalence.DFASimulatorEQOracle;
+import de.learnlib.oracle.equivalence.SimulatorEQOracle;
 import de.learnlib.oracle.membership.SimulatorOracle;
 import de.learnlib.util.Experiment;
 import de.learnlib.util.statistics.SimpleProfiler;
@@ -45,11 +53,12 @@ public class OptimalTTTDFATest {
         final Random r = new Random(seed);
         
 //        dfa = createDFA(r, 60, 2);
-        final int ceLength = 200;
-//        dfa = AUTImporter.read(
-//                OptimalLStarDFATest.class.getResourceAsStream("/peterson2.dfa.gz"));
-        dfa = constructSUL();
-        
+        final int ceLength = 20;
+        //dfa = AUTImporter.read(
+        //        OptimalTTTDFATest.class.getResourceAsStream("/peterson3.dfa.gz"));
+        //dfa = constructSUL();
+        dfa = DFAGenerator.generateDefault();
+
         Alphabet<Character> inputs = dfa.getInputAlphabet();
 
         MembershipOracle.DFAMembershipOracle<Character> sul =
@@ -58,20 +67,26 @@ public class OptimalTTTDFATest {
         DFACounterOracle<Character> mqOracle =
                 new DFACounterOracle<>(sul, "mq");
 
+        DFACacheOracle<Character> cache = DFACacheOracle.createTreeCacheOracle(inputs, mqOracle);
+
         DFACounterOracle<Character> ceOracle =
                 new DFACounterOracle<>(sul, "ce");
 
-        OptimalTTTDFA ttt = new OptimalTTTDFA(mqOracle, ceOracle, inputs);
-        
+        OptimalTTTDFA ttt = new OptimalTTTDFA(cache, cache, inputs);
+
+        TTTLearnerDFABuilder<Character> b = new TTTLearnerDFABuilder<>();
+        TTTLearnerDFA<Character> tttRef =
+                b.withAlphabet(inputs).withOracle(cache).create();
+
         EquivalenceOracle.DFAEquivalenceOracle<Character> eqOracle =
-//                new SimulatorEQOracle.DFASimulatorEQOracle(dfa);
-                new EquivalenceOracle.DFAEquivalenceOracle() {
-            @Override
-            public DefaultQuery findCounterExample(Object a, Collection clctn) {
-                 return generateCounterexample( (DFA<?,Character>)a, ceLength, r);
-            }
-        };
-                
+                new DFASimulatorEQOracle(dfa);
+//                new EquivalenceOracle.DFAEquivalenceOracle() {
+//            @Override
+//            public DefaultQuery findCounterExample(Object a, Collection clctn) {
+//                 return generateCounterexample( (DFA<?,Character>)a, ceLength, r);
+//            }
+//        };
+
         Experiment.DFAExperiment<Character> experiment = new Experiment.DFAExperiment<>(ttt, eqOracle, inputs);
 
         // turn on time profiling
@@ -194,7 +209,12 @@ public class OptimalTTTDFATest {
 	private static <I> DefaultQuery<I,Boolean>
 	generateCounterexample(Random random, CompactDFA<I> target, DFA<?,I> hypothesis, int ceLength) {
 		Alphabet<I> alphabet = target.getInputAlphabet();
-		
+
+        Word<I> input = Automata.findSeparatingWord(target, hypothesis, alphabet);
+        if (input != null) {
+            return new DefaultQuery<>(input, target.computeOutput(input));
+        }
+
 		if(Automata.findSeparatingWord(target, hypothesis, alphabet) == null) {
 			return null;
 		}
