@@ -19,7 +19,12 @@
             <version>0.16.0</version>
             <type>pom</type>
         </dependency>
-
+        <dependency>
+            <groupId>de.learnlib.testsupport</groupId>
+            <artifactId>learnlib-learning-examples</artifactId>
+            <version>0.16.0</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- AutomataLib dependencies -->
         <!-- dependency>
